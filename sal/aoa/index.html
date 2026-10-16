@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sal AOA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #f6f7f9;
+            --surface: #ffffff;
+            --text: #17191d;
+            --text-soft: #656a73;
+            --muted: #92969d;
+            --line: #e7e9ed;
+            --red: #dc2626;
+            --red-dark: #991b1b;
+            --red-soft: #fef2f2;
+            --blue: #1877f2;
+            --shadow: 0 18px 55px rgba(23, 25, 29, 0.07);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            min-height: 100%;
+            background: var(--bg);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at 50% -10%, rgba(220, 38, 38, 0.10), transparent 28%),
+                linear-gradient(180deg, #ffffff 0%, #f8f9fb 48%, #f4f5f7 100%);
+            color: var(--text);
+            padding: 78px 16px 64px;      /* ← espaço para a barra fixa */
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ============================================================
+           BARRA DE URGÊNCIA FIXA (TOPO)
+           ============================================================ */
+        .urgency-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            background: linear-gradient(90deg, #b91c1c 0%, #dc2626 50%, #b91c1c 100%);
+            color: #ffffff;
+            padding: 11px 14px;
+            text-align: center;
+            box-shadow: 0 4px 18px rgba(220, 38, 38, 0.35);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            animation: barDrop 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        @keyframes barDrop {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* brilho a passar (shimmer) */
+        .urgency-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -40%;
+            width: 40%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+            transform: skewX(-18deg);
+            animation: barShimmer 3.2s ease-in-out infinite;
+        }
+
+        @keyframes barShimmer {
+            0% { left: -40%; }
+            60%, 100% { left: 140%; }
+        }
+
+        .urgency-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            max-width: 720px;
+            margin: 0 auto;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.1px;
+            line-height: 1.3;
+        }
+
+        .urgency-inner .icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.18);
+            font-size: 11px;
+            animation: iconPulse 1.4s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.35); }
+            50% { transform: scale(1.08); box-shadow: 0 0 0 6px rgba(255,255,255,0); }
+        }
+
+        .urgency-inner .text {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .urgency-inner .text strong {
+            font-weight: 900;
+            letter-spacing: 0.2px;
+        }
+
+        /* Setinha animada */
+        .urgency-inner .arrow {
+            display: inline-block;
+            animation: arrowBounce 1.1s ease-in-out infinite;
+            font-size: 11px;
+        }
+
+        @keyframes arrowBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(2px); }
+        }
+
+        /* ===== PARTÍCULAS DE FUNDO ===== */
+        #particles {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.42;
+        }
+
+        /* ===== CONTAINER ===== */
+        .vsl-wrap {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+            margin: 0 auto;
+            animation: pageEnter 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        @keyframes pageEnter {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+                filter: blur(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        /* ===== LOGO ===== */
+        .vsl-logo {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .vsl-logo img {
+            max-height: 48px;
+            width: auto;
+            opacity: 0.96;
+            border-radius: 8px;
+            animation: logoFloat 4.8s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+
+        /* ===== BADGE ===== */
+        .vsl-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+            color: var(--red-dark);
+            background: var(--red-soft);
+            padding: 7px 13px;
+            border-radius: 999px;
+            margin-bottom: 18px;
+            animation: badgePulse 2.4s ease-in-out infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.18);
+                transform: translateY(0);
+            }
+            50% {
+                box-shadow: 0 0 0 7px rgba(220, 38, 38, 0);
+                transform: translateY(-1px);
+            }
+        }
+
+        /* ===== HEADLINE ===== */
+        .vsl-headline {
+            max-width: 650px;
+            margin: 0 auto 27px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 800;
+            line-height: 1.25;
+            color: var(--text);
+            letter-spacing: -0.85px;
+            animation: headlineIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        @keyframes headlineIn {
+            0% {
+                opacity: 0;
+                transform: translateY(18px) scale(0.985);
+                filter: blur(4px);
+            }
+            65% {
+                opacity: 1;
+                transform: translateY(-2px) scale(1.003);
+                filter: blur(0);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        .vsl-headline .highlight {
+            color: var(--red);
+            -webkit-text-fill-color: var(--red);
+            position: relative;
+            display: inline-block;
+        }
+
+        .vsl-headline .highlight::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(220,38,38,0.88), rgba(220,38,38,0));
+            transform-origin: left;
+            animation: underlineGrow 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        @keyframes underlineGrow {
+            from { transform: scaleX(0); opacity: 0; }
+            to { transform: scaleX(1); opacity: 1; }
+        }
+
+        /* ===== VSL — CORRIGIDO ===== */
+        .vsl-player {
+            width: 100%;
+            margin: 0 auto 34px;
+            animation: playerIn 0.78s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        @keyframes playerIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px) scale(0.985);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* O wrapper NÃO corta o botão do pitch (sem overflow:hidden) */
+        .vsl-frame {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            position: relative;
+            background: transparent;
+            border-radius: 14px;
+            overflow: visible;            /* ← deixa o overlay do botão sair livremente */
+            transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                        box-shadow 0.3s ease;
+        }
+
+        .vsl-frame:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Apenas o iframe/vídeo recebe arredondamento — o botão overlay NÃO */
+        .vsl-frame vturb-smartplayer iframe,
+        .vsl-frame vturb-smartplayer video,
+        .vsl-frame [id^="ifr_"] {
+            max-width: 100% !important;
+            width: 100% !important;
+            display: block !important;
+            border-radius: 14px !important;
+            overflow: hidden !important;
+        }
+
+        /* Proporção CORRETA — igual ao HTML (133.33% = 3:4) */
+        .vsl-frame .vturb-player-placeholder {
+            padding-top: 133.33333333333331% !important;
+        }
+
+        /* ============================================================
+           COMENTÁRIOS — REDESENHADOS
+           ============================================================ */
+        .comments-section {
+            width: 100%;
+            max-width: 650px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px 22px 16px;
+            box-shadow:
+                0 1px 2px rgba(0, 0, 0, 0.04),
+                0 12px 38px rgba(23, 25, 29, 0.06);
+            border: 1px solid #eceef1;
+            animation: commentsIn 0.8s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        @keyframes commentsIn {
+            from {
+                opacity: 0;
+                transform: translateY(22px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Cabeçalho */
+        .comments-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 0 14px;
+            margin-bottom: 4px;
+            border-bottom: 1px solid #ebedf0;
+        }
+
+        .comments-header .title {
+            font-size: 14px;
+            line-height: 1.2;
+            font-weight: 700;
+            color: #050505;
+            letter-spacing: -0.1px;
+        }
+
+        .comments-header .live {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: #65676b;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .comments-header .live i {
+            font-size: 7px;
+            color: #0866FF;
+            animation: pulse-dot 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .35; transform: scale(.75); }
+        }
+
+        /* ===== CADA COMENTÁRIO ===== */
+        .comment {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 8px;
+            margin: 0 -8px;
+            border-radius: 10px;
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            transition: background-color 0.18s ease;
+            animation: commentIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+        }
+
+        .comment:nth-of-type(2) { animation-delay: .05s; }
+        .comment:nth-of-type(3) { animation-delay: .10s; }
+        .comment:nth-of-type(4) { animation-delay: .15s; }
+        .comment:nth-of-type(5) { animation-delay: .20s; }
+        .comment:nth-of-type(6) { animation-delay: .25s; }
+        .comment:nth-of-type(7) { animation-delay: .30s; }
+
+        @keyframes commentIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .comment:hover {
+            background: #f7f8fa;
+        }
+
+        /* Avatar */
+        .comment .avatar {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background-color: #e4e6eb;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: #65676b;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.04);
+        }
+
+        /* Balão (bolha do comentário) */
+        .comment .content {
+            flex: 1;
+            min-width: 0;
+            padding-top: 0;
+        }
+
+        .comment .bubble {
+            background: #f0f2f5;
+            border-radius: 16px;
+            padding: 9px 13px;
+            display: inline-block;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        .comment .author {
+            font-weight: 700;
+            font-size: 13px;
+            line-height: 1.3;
+            color: #050505;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-bottom: 2px;
+        }
+
+        .comment .author .verified {
+            color: var(--blue);
+            font-size: 11px;
+        }
+
+        .comment .text {
+            font-size: 13.5px;
+            line-height: 1.45;
+            color: #050505;
+            margin: 0;
+            word-break: break-word;
+        }
+
+        .comment .text strong {
+            color: #050505;
+            font-weight: 700;
+        }
+
+        /* Linha de ações (like, responder, tempo) */
+        .comment .actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 5px;
+            padding-left: 12px;
+            font-size: 12px;
+            color: #65676b;
+            font-weight: 600;
+        }
+
+        .comment .actions .time {
+            font-weight: 400;
+            color: #8a8d91;
+            font-size: 11.5px;
+        }
+
+        .comment .actions .like-count {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: color 0.18s ease;
+            user-select: none;
+            color: #65676b;
+            font-weight: 600;
+        }
+
+        .comment .actions .like-count:hover {
+            color: #0866FF;
+        }
+
+        .comment .actions .like-count i {
+            width: 16px;
+            height: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0866FF, #0866FF);
+            color: #fff !important;
+            font-size: 8px;
+            box-shadow: 0 1px 2px rgba(220,38,38,.35);
+            transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+        }
+
+        .comment .actions .like-count.liked {
+            color: #0866FF;
+        }
+
+        .comment .actions .like-count.liked i {
+            transform: scale(1.18);
+        }
+
+        .comment .actions .reply {
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+            color: #65676b;
+            transition: color 0.18s ease;
+        }
+
+        .comment .actions .reply:hover {
+            color: #050505;
+        }
+
+        /* Rodapé */
+        .comments-closed {
+            text-align: center;
+            color: #8a8d91;
+            font-size: 11.5px;
+            line-height: 1.4;
+            font-weight: 500;
+            padding: 14px 0 4px;
+            border-top: 1px solid #ebedf0;
+            margin-top: 8px;
+        }
+
+        /* ===== RESPONSIVO ===== */
+        @media (max-width: 480px) {
+            body {
+                padding: 74px 10px 48px;
+            }
+
+            .urgency-bar {
+                padding: 9px 10px;
+            }
+
+            .urgency-inner {
+                font-size: 11.5px;
+                gap: 7px;
+            }
+
+            .urgency-inner .icon {
+                width: 17px;
+                height: 17px;
+                font-size: 9px;
+            }
+
+            .vsl-headline {
+                font-size: 21px;
+                line-height: 1.27;
+                margin-bottom: 22px;
+            }
+
+            .vsl-logo img {
+                max-height: 42px;
+            }
+
+            .vsl-player {
+                margin-bottom: 28px;
+            }
+
+            .vsl-frame {
+                max-width: 290px;
+                border-radius: 12px;
+            }
+
+            .vsl-frame vturb-smartplayer iframe,
+            .vsl-frame vturb-smartplayer video,
+            .vsl-frame [id^="ifr_"] {
+                border-radius: 12px !important;
+            }
+
+            .comments-section {
+                padding: 16px 14px 12px;
+                border-radius: 14px;
+            }
+
+            .comments-header {
+                padding-bottom: 12px;
+                margin-bottom: 3px;
+            }
+
+            .comments-header .title {
+                font-size: 13px;
+            }
+
+            .comment {
+                padding: 10px 6px;
+                margin: 0 -6px;
+                gap: 8px;
+            }
+
+            .comment .avatar {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                font-size: 12px;
+            }
+
+            .comment .bubble {
+                padding: 8px 11px;
+                border-radius: 14px;
+            }
+
+            .comment .author {
+                font-size: 12.5px;
+            }
+
+            .comment .text {
+                font-size: 12.5px;
+                line-height: 1.42;
+            }
+
+            .comment .actions {
+                gap: 14px;
+                font-size: 11.5px;
+                padding-left: 10px;
+            }
+
+            .comment .actions .time {
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .urgency-inner {
+                font-size: 10.5px;
+            }
+            .urgency-inner .text .hide-xs {
+                display: none;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ============================================================
+         BARRA DE URGÊNCIA FIXA (TOPO)
+         ============================================================ -->
+    <div class="urgency-bar" id="urgencyBar" role="alert" aria-live="polite">
+        <div class="urgency-inner">
+            <span class="text">
+                <span class="hide-xs">⚠️</span>
+                <strong>ATENÇÃO:</strong>
+                <span class="hide-xs">este vídeo vai sair do ar em breve!</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- PARTÍCULAS DE FUNDO -->
+    <canvas id="particles"></canvas>
+
+    <div class="vsl-wrap">
+
+        <!-- HEADLINE DESTACADA -->
+        <h1 class="vsl-headline">
+            O <span class="highlight">segredo </span> que faz homens voltarem a ficar <span class="highlight">duros como aos 18 anos</span> usando apenas <span class="highlight">Sal de Cozinha</span>
+        </h1>
+
+        <!-- VSL PURA -->
+        <div class="vsl-player">
+            <div class="vsl-frame">
+                <vturb-smartplayer id="vid-6acbb11e20c1aa1d6f14d0fa">
+                    <div class="vturb-player-placeholder" style="position: relative; width: 100%; padding: 133.33333333333331% 0 0; z-index: 0; background-color: transparent;"></div>
+                </vturb-smartplayer>
+            </div>
+            <script type="text/javascript">
+                var s=document.createElement("script");
+                s.src="https://scripts.converteai.net/2c3d960f-39c3-4072-a7af-c60fed7da363/players/6acbb11e20c1aa1d6f14d0fa/v4/player.js";
+                s.async=!0,document.head.appendChild(s);
+            </script>
+        </div>
+
+        <!-- COMENTÁRIOS -->
+        <div class="comments-section">
+            <div class="comments-header">
+                <span class="title">1.321 Comentários</span>
+            </div>
+
+            <div class="comment" data-id="1">
+                <div class="avatar" style="background-image: url('images/1.jpg');"></div>
+                <div class="content">
+                    <div class="bubble">
+                        <div class="author">Carlos Silva <span class="verified"><i class="fas fa-circle-check"></i></span></div>
+                        <div class="text">Depois de 8 anos dependente de Viagra, finalmente estou livre! Usei o sal por 3 dias e tive a ereção mais forte da minha vida. <strong>Minha esposa não acreditou!</strong> 😲</div>
+                    </div>
+                    <div class="actions">
+                        <span class="time">Há 2 horas</span>
+                        <span class="like-count"><i class="fas fa-thumbs-up"></i> 254</span>
+                        <span class="reply">Responder</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comment" data-id="3">
+                <div class="avatar" style="background-image: url('images/2.jpg');"></div>
+                <div class="content">
+                    <div class="bubble">
+                        <div class="author">João Santos</div>
+                        <div class="text">Sofri 12 anos de impotência e já tinha perdido as esperanças. Com o truque do sal, em uma semana meu pênis ficou mais grosso e as ereções duram <strong>40+ minutos</strong>. Revolucionário!</div>
+                    </div>
+                    <div class="actions">
+                        <span class="time">Há 1 hora</span>
+                        <span class="like-count"><i class="fas fa-thumbs-up"></i> 189</span>
+                        <span class="reply">Responder</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comment" data-id="4">
+                <div class="avatar" style="background-image: url('images/3.jpg');"></div>
+                <div class="content">
+                    <div class="bubble">
+                        <div class="author">Miguel Costa</div>
+                        <div class="text">Aos 61 anos, achei que minha vida sexual tinha acabado. Mas com esse método natural de sal, voltei a ter ereções como aos 25! <strong>Minha mulher está impressionada</strong> e nossa relação renasceu.</div>
+                    </div>
+                    <div class="actions">
+                        <span class="time">Há 1 hora</span>
+                        <span class="like-count"><i class="fas fa-thumbs-up"></i> 312</span>
+                        <span class="reply">Responder</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comment" data-id="5">
+                <div class="avatar" style="background-image: url('images/4.jpg');"></div>
+                <div class="content">
+                    <div class="bubble">
+                        <div class="author">António Fernandes</div>
+                        <div class="text">Gastava mais de 5.000 meticais por mês em Viagra e sprays. Agora com o sal, tenho ereções naturais que duram <strong>mais de 50 minutos</strong>. Economizo dinheiro e tenho melhor desempenho.</div>
+                    </div>
+                    <div class="actions">
+                        <span class="time">Há 19 minutos</span>
+                        <span class="like-count"><i class="fas fa-thumbs-up"></i> 147</span>
+                        <span class="reply">Responder</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comment" data-id="6">
+                <div class="avatar" style="background-image: url('images/5.jpg');"></div>
+                <div class="content">
+                    <div class="bubble">
+                        <div class="author">Paulo Machava</div>
+                        <div class="text">Depois do infarto, os médicos proibiram Viagra. Pensei que nunca mais teria uma vida sexual normal. O sal me salvou, é <strong>100% natural</strong> e não faz mal ao coração. Ereções duras como pedra!</div>
+                    </div>
+                    <div class="actions">
+                        <span class="time">Há 19 minutos</span>
+                        <span class="like-count"><i class="fas fa-thumbs-up"></i> 98</span>
+                        <span class="reply">Responder</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comment" data-id="7">
+                <div class="avatar" style="background-image: url('images/6.jpg');"></div>
+                <div class="content">
+                    <div class="bubble">
+                        <div class="author">Ricardo Dauto</div>
+                        <div class="text">Minha autoestima estava no chão. Com 49 anos já não conseguia mais ter relações. O truque do sal mudou tudo — em 10 dias meu pênis cresceu <strong>3cm</strong> e as ereções são explosivas! Minha mulher não para de elogiar.</div>
+                    </div>
+                    <div class="actions">
+                        <span class="time">Há 19 minutos</span>
+                        <span class="like-count"><i class="fas fa-thumbs-up"></i> 215</span>
+                        <span class="reply">Responder</span>
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="comments-closed">Este post já não está a receber comentários!</h4>
+        </div>
+
+    </div>
+
+    <script>
+        /* ============================================================
+           PARTÍCULAS DE FUNDO
+        ============================================================ */
+        (function() {
+            const canvas = document.getElementById('particles');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let w, h;
+
+            function resize() {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            for (let i = 0; i < 40; i++) {
+                particles.push({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    r: Math.random() * 1.5 + 0.3,
+                    vx: (Math.random() - 0.5) * 0.3,
+                    vy: (Math.random() - 0.5) * 0.3,
+                    o: Math.random() * 0.4 + 0.1
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, w, h);
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x < 0) p.x = w;
+                    if (p.x > w) p.x = 0;
+                    if (p.y < 0) p.y = h;
+                    if (p.y > h) p.y = 0;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(220, 38, 38, ${Math.min(p.o, 0.10)})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+        })();
+
+        /* ============================================================
+           LIKES NOS COMENTÁRIOS
+        ============================================================ */
+        document.querySelectorAll('.comment .like-count').forEach(el => {
+            const icon = el.querySelector('i');
+            const textNode = el.childNodes[1];
+            let count = parseInt(textNode.textContent.trim()) || 0;
+            let liked = false;
+
+            el.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!liked) {
+                    count += 1;
+                    liked = true;
+                    el.classList.add('liked');
+                } else {
+                    count -= 1;
+                    liked = false;
+                    el.classList.remove('liked');
+                }
+                textNode.textContent = ' ' + count;
+            });
+        });
+
+        /* ============================================================
+           CONTADOR REGRESSIVO DA BARRA DE URGÊNCIA
+           Inicia em 39:18 e reinicia em loop ao chegar a 00:00
+        ============================================================ */
+        (function() {
+            // 39 minutos e 18 segundos = 39 * 60 + 18 = 2358 segundos
+            const TOTAL_SECONDS = 39 * 60 + 18;   // ← 39:18
+            let remaining = TOTAL_SECONDS;
+
+            const minEl = document.getElementById('cd-min');
+            const secEl = document.getElementById('cd-sec');
+
+            function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+            function render() {
+                const m = Math.floor(remaining / 60);
+                const s = remaining % 60;
+                if (minEl) minEl.textContent = pad(m);
+                if (secEl) secEl.textContent = pad(s);
+            }
+
+            render();
+
+            const timer = setInterval(() => {
+                remaining--;
+                if (remaining < 0) {
+                    // Reinicia em loop para manter a urgência sempre ativa
+                    remaining = TOTAL_SECONDS;
+                }
+                render();
+            }, 1000);
+        })();
+    </script>
+
+</body>
+</html>
